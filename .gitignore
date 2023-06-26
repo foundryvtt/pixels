@@ -1,0 +1,9 @@
+# IDE
+.idea/
+.vs/
+
+# Foundry VTT
+*.lock
+
+# Node Modules
+node_modules/

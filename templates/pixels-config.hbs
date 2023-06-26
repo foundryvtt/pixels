@@ -1,0 +1,24 @@
+<form autocomplete="off">
+    <section id="connected-devices">
+        <header>
+            <h2>Connected Pixels</h2>
+            {{#each pixels as |config|}}
+            <div class="pixel flexrow" data-pixel-id="{{config.name}}">
+                <h3><i class="fa-solid {{config.icon}}"></i> {{config.name}}</h3>
+                <span class="rssi"><i class="fa-solid fa-bluetooth"></i> {{config.pixel.rssi}}</span>
+                <span class="battery"><i class="fa-solid fa-battery-full"></i> {{config.pixel.batteryLevel}}</span>
+                <button type="button" class="flex0" data-action="disconnectPixel" data-tooltip="Disconnect">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+            {{/each}}
+        </header>
+
+        <footer>
+            <button type="button" data-action="requestPixel">
+                <i class="fa-solid fa-plus"></i>
+                Add Pixel Dice
+            </button>
+        </footer>
+    </section>
+</form>

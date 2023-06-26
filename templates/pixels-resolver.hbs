@@ -1,0 +1,18 @@
+<form autocomplete="off">
+    <header class="roll-details">
+        <p class="formula">{{roll.formula}}</p>
+    </header>
+    <section class="requested-rolls">
+        {{#each terms as |term|}}
+        <div class="term flexrow">
+            <p class="formula"><i class="fa-solid {{term.icon}}"></i> {{term.label}}</p>
+            <input type="number" name="{{term.id}}" placeholder="{{term.placeholder}}" value="{{term.value}}" {{disabled term.disabled}}>
+        </div>
+        {{/each}}
+    </section>
+    <footer>
+        <button type="submit">
+            <i class="fa-solid fa-check"></i> Confirm
+        </button>
+    </footer>
+</form>

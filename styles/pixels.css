@@ -1,0 +1,15 @@
+#pixels-configuration .pixel.flexrow {
+    gap: 0.25rem;
+    flex-wrap: nowrap;
+    align-items: center;
+}
+
+#pixels-configuration .pixel.flexrow h3 {
+    border: none;
+    margin: 0;
+    font-weight: bold;
+}
+
+#pixels-configuration .pixel.flexrow span {
+    flex: none;
+}

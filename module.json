@@ -1,0 +1,39 @@
+{
+  "id": "pixels",
+  "title": "Pixels - Electronic Dice",
+  "description": "Integrates Pixels electronic dice ",
+  "version": "#{VERSION}#",
+  "manifest": "#{MANIFEST}#",
+  "download": "#{DOWNLOAD}#",
+  "url": "https://gamewithpixels.com/",
+  "compatibility": {
+    "minimum": 10,
+    "verified": 10,
+    "maximum": 11
+  },
+  "authors": [
+    {
+      "name": "Foundry Virtual Tabletop Team",
+      "website": "https://foundryvtt.com"
+    }
+  ],
+  "relationships": {
+    "systems": [],
+    "requires": [
+      {
+        "id": "unfulfilled-rolls",
+        "type": "module"
+      }
+    ]
+  },
+  "scripts": [
+    "node_modules/@systemic-games/pixels-web-connect/dist/umd/index.js"
+  ],
+  "esmodules": [
+    "scripts/pixels.mjs"
+  ],
+  "styles": [
+    "styles/pixels.css"
+  ],
+  "license": "LICENSE"
+}
