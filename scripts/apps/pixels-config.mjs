@@ -3,9 +3,9 @@ import {handleRoll, handleStatus} from "../handlers.mjs";
 /**
  * An application used for initial configuration of Pixels dice.
  */
-export default class PixelsConfiguration extends Application {
-  constructor(options) {
-    super(options);
+export default class PixelsConfiguration extends FormApplication {
+  constructor(_, options) {
+    super(pixelsDice, options);
     pixelsDice.config = this;
   }
 
@@ -120,5 +120,12 @@ export default class PixelsConfiguration extends Application {
     pixel.removeEventListener("status", config.handleStatus);
     await pixel.disconnect();
     this.render(false, {height: "auto"});
+  }
+
+  /* -------------------------------------------- */
+
+  /** @override */
+  _updateObject(event, formData) {
+    // No-op
   }
 }

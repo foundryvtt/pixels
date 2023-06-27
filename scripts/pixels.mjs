@@ -28,7 +28,36 @@ const RESOLVERS = [];
 /* -------------------------------------------- */
 
 Hooks.on("init", function() {
+
+  // Pixels enabled
+  game.settings.register("pixels", "enabled", {
+    scope: "client",
+    name: "Enable Pixels Dice",
+    hint: "Enable use of Pixels Electronic Dice in the Foundry VTT game client",
+    config: true,
+    type: Boolean,
+    default: false,
+    onChange: enabled => {
+      module.enabled = enabled;
+      if ( enabled ) {
+        const config = new PixelsConfiguration();
+        config.render(true);
+      }
+    }
+  });
+
+  // Configuration menu
+  game.settings.registerMenu("pixels", "configuration", {
+    name: "Pixels Configuration",
+    label: "Configure Pixels",
+    icon: "fa-solid fa-dice-d20",
+    type: PixelsConfiguration,
+    restricted: false
+  })
+
+  // Register module properties
   const module = globalThis.pixelsDice = game.modules.get("pixels");
+  module.enabled = false;
   module.PIXELS = PIXELS;
   module.RESOLVERS = RESOLVERS;
   module.api = api;
@@ -40,6 +69,8 @@ Hooks.on("init", function() {
 /* -------------------------------------------- */
 
 Hooks.on("ready", async function() {
+  const enabled = globalThis.pixelsDice.enabled = game.settings.get("pixels", "enabled");
+  if ( !enabled ) return;
   const app = new PixelsConfiguration();
   app.render(true);
 });
