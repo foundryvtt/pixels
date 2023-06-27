@@ -22,7 +22,10 @@
     "requires": [
       {
         "id": "unfulfilled-rolls",
-        "type": "module"
+        "type": "module",
+        "compatibility": {
+          "minimum": "0.1.0"
+        }
       }
     ]
   },
