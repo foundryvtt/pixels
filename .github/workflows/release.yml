@@ -41,12 +41,8 @@ jobs:
       - name: Install dependencies
         run: npm ci --cache .npm --prefer-offline
 
-      # Compile JavaScript
-      - name: Compile
-        run: npm run compile
-
-      # Create a "system.zip" archive containing all the system's required files.
-      - name: Create System Archive
+      # Create a "module.zip" archive containing all the system's required files.
+      - name: Create Module Archive
         run: |
           zip --recurse-paths ./module.zip  \
             module.json                     \
