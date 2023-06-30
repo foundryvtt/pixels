@@ -1,5 +1,3 @@
-
-
 /**
  * An application used for initial configuration of Pixels dice.
  */
@@ -8,6 +6,8 @@ export default class PixelsConfiguration extends FormApplication {
     super(manager, options);
     pixelsDice.config = this;
   }
+
+  /* -------------------------------------------- */
 
   /** @inheritdoc */
   static get defaultOptions() {
@@ -84,7 +84,7 @@ export default class PixelsConfiguration extends FormApplication {
     const icon = button.querySelector("i");
     icon.className = "fa-solid fa-spinner fa-spin";
     try {
-      await this.object.request();
+      await pixelsDice.PIXELS.request();
     }
     catch(err) {
       return ui.notifications.error(err, {console: true});
@@ -101,7 +101,7 @@ export default class PixelsConfiguration extends FormApplication {
    */
   async #disconnectPixel(button) {
     const pixelName = button.closest(".pixel").dataset.pixelId;
-    await this.object.disconnect(pixelName);
+    await pixelsDice.PIXELS.disconnect(pixelName);
     this.render(false, {height: "auto"});
   }
 

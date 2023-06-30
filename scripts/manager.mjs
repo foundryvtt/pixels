@@ -64,6 +64,7 @@ export default class PixelsManager extends Map {
       }
     }
     console.groupEnd();
+    pixelsDice.config?.render(false);
     return allReconnected;
   }
 
@@ -88,7 +89,7 @@ export default class PixelsManager extends Map {
     const config = this.get(pixel.name) || {};
 
     // Attempt connection
-    await pixelsWebConnect.repeatConnect(pixel, {retries: 3});
+    await pixel.connect();
 
     // Activate event handlers
     config.handleRoll = roll => handleRoll(config, roll);
@@ -101,6 +102,7 @@ export default class PixelsManager extends Map {
       name: pixel.name,
       systemId: pixel.systemId,
       denomination: pixel.dieFaceCount,
+      pixel: pixel,
       active: true
     });
     this.set(pixel.name, config);
@@ -119,11 +121,11 @@ export default class PixelsManager extends Map {
    * @returns {Promise<void>}
    */
   async disconnect(name) {
-    const config = this.get(pixel.name);
-    if ( !config?.pixel ) return;
-    const pixel = config.pixel;
-    pixel.removeEventListener("roll", pixel.handleRoll);
-    pixel.removeEventListener("status", pixel.handleStatus);
+    const config = this.get(name);
+    const pixel = config?.pixel;
+    if ( !pixel ) return;
+    pixel.removeEventListener("roll", config.handleRoll);
+    pixel.removeEventListener("status", config.handleStatus);
     await pixel.disconnect();
     this.delete(name);
   }

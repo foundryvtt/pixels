@@ -22,19 +22,25 @@ export function handleRoll(config, result) {
  */
 export async function handleStatus(config, status) {
   if ( status !== "disconnected") return;   // Only care about disconnected for now
+  if ( !config.active ) return; // Already disconnected
+  config.active = false;
+  pixelsDice.config.render(false);
 
   // Attempt re-connection
   ui.notifications.warn(`Lost connection to Pixel ${config.name}, attempting to re-establish.`);
   try {
-    await pixelsWebConnect.repeatConnect(pixel, {retries: 3});
+    await config.pixel.connect();
+    config.active = true;
     ui.notifications.info(`Re-established connection to Pixel ${config.name}.`);
   }
 
     // Failed to re-connect
   catch(err) {
-    pixelsDice.PIXELS.delete(config.name);  // Remove the device
-    pixelsDice.config.render(false);        // Re-render the configuration app
+    delete config.pixel;
+    pixelsDice.PIXELS.set(config.name, config);
+    ui.notifications.warn(`Unable to re-connect to Pixel ${config.name}. Manual re-pairing required.`);
   }
+  pixelsDice.config.render(false);
 }
 
 /* -------------------------------------------- */
