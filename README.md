@@ -20,3 +20,12 @@ In the **Pixels Electronic Dice Configuration** menu you can click **Add Pixel D
 
 Due to a current limitation with WebBluetooth, your dice do not automatically re-connect each time you refresh your browser. A new Chrome feature can be enabled to allow automatic reconnection. To enable this feature you must visit chrome://flags in your Google Chrome browser and enable the **Use
 the new permissions backend for Web Bluetooth** setting. This is an *optional step* which can improve your user experience with Pixels devices. If your browser does not support this option, or you do not wish to enable it, you can manually pair each die at the start of your game session.
+
+# Contribution Policy
+This code is offered under the MIT License. Code contributions are accepted with the following process.
+
+1. Create an Issue that describes the change you wish to make to this package. You may reference a pre-existing issue if one already exists.
+2. If you are a **first time contributor**, comment on the issue that you wish to address to confirm that it is a suitable topic for a PR before beginning work. This step is intended to protect your time (and ours) from a PR which is unlikely to be feasible or merge-able for any reason. This step is recommended (but not required) for repeat contributors.
+3. Create a PR from a forked branch of this repository. In your PR provide a link to the issue, a clear and concise description of the change, and the test process you followed to verify that your proposed change is working correctly.
+4. Please be patient in waiting for review of your PR. Sometimes this will occur quickly, sometimes this could take a long time depending on our current prioritization. If you disagree with any of the comments provided, please feel free to state your differing opinion, but ultimately changes requested as part of the PR process are **non-negotiable**. Your code will not be merged if there are any unresolved comments.
+5. Once your code is merged, you will be credited and acknowledged in the next release of the module.
