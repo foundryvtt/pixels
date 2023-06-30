@@ -13,3 +13,7 @@
 #pixels-configuration .pixel.flexrow span {
     flex: none;
 }
+
+#pixels-configuration .pixel.inactive {
+    color: #666666;
+}

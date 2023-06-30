@@ -73,7 +73,8 @@ jobs:
             node_modules/                   \
             scripts/                        \
             styles/                         \
-            templates/                      
+            templates/                      \
+            ui/
 
       # Update the GitHub release with the manifest and system archive files.
       - name: Update Release With Files

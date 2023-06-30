@@ -1,11 +1,11 @@
-import {handleRoll, handleStatus} from "../handlers.mjs";
+
 
 /**
  * An application used for initial configuration of Pixels dice.
  */
 export default class PixelsConfiguration extends FormApplication {
-  constructor(_, options) {
-    super(pixelsDice, options);
+  constructor(manager, options) {
+    super(manager, options);
     pixelsDice.config = this;
   }
 
@@ -27,8 +27,17 @@ export default class PixelsConfiguration extends FormApplication {
   async getData(options) {
     const pixels = [];
     for ( const config of pixelsDice.PIXELS.values() ) {
-      await config.pixel.queryRssi();
-      pixels.push(config);
+      pixels.push({
+        cssClass: config.active ? "active" : "inactive",
+        name: config.name,
+        dieIcon: config.icon,
+        disconnectTooltip: config.active ? "Forget" : "Disconnect",
+        denomination: `d${config.denomination}`,
+        denominationIcon: "fa-solid fa-dice-d20", // TODO support other icons
+        connectionIcon: config.active ? "fa-bluetooth" : "fa-signal-slash",
+        rssi: await config.pixel?.queryRssi(),
+        battery: config.pixel?.batteryLevel
+      });
     }
     return {pixels};
   }
@@ -71,36 +80,16 @@ export default class PixelsConfiguration extends FormApplication {
    * @returns {Promise<void>}
    */
   async #connectPixel(button) {
-
-    // Disable the button
     button.disabled = true;
     const icon = button.querySelector("i");
     icon.className = "fa-solid fa-spinner fa-spin";
-
-    // Attempt connection to the device
-    let pixel;
     try {
-      pixel = await pixelsWebConnect.requestPixel();
-      await pixelsWebConnect.repeatConnect(pixel, {retries: 3});
+      await this.object.request();
     }
-
-    // Failed to connect
     catch(err) {
       return ui.notifications.error(err, {console: true});
     }
-
-    // Register the pixel configuration
-    const config = {name: pixel.name, pixel, denomination: 20, icon: "fa-solid fa-dice-d20"};
-    config.handleRoll = roll => handleRoll(config, roll);
-    config.handleStatus = status => handleStatus(config, status);
-    pixel.addEventListener("roll", config.handleRoll);
-    pixel.addEventListener("status", config.handleStatus);
-    pixelsDice.PIXELS.set(pixel.name, config);
-    await pixel.blink(Color.from("#cc6600"));
-
-    // Re-enable the button
-    icon.className = "fa-solid fa-plus";
-    button.disabled = false;
+    this.render(false, {height: "auto"});
   }
 
   /* -------------------------------------------- */
@@ -112,13 +101,7 @@ export default class PixelsConfiguration extends FormApplication {
    */
   async #disconnectPixel(button) {
     const pixelName = button.closest(".pixel").dataset.pixelId;
-    const config = pixelsDice.PIXELS.get(pixelName);
-    if ( !config ) return;
-    const pixel = config.pixel;
-    pixelsDice.PIXELS.delete(pixelName);
-    pixel.removeEventListener("roll", config.handleRoll);
-    pixel.removeEventListener("status", config.handleStatus);
-    await pixel.disconnect();
+    await this.object.disconnect(pixelName);
     this.render(false, {height: "auto"});
   }
 

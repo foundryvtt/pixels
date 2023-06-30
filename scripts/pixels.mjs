@@ -1,21 +1,7 @@
+import PixelsManager from "./manager.mjs";
 import PixelsConfiguration from "./apps/pixels-config.mjs";
 import PixelsResolver from "./apps/pixels-resolver.mjs";
 import * as api from "./handlers.mjs";
-
-/**
- * @typedef {Object} PixelConfiguration
- * @property {string} name              The name of the connected Pixel
- * @property {Pixel} pixel              The connected Pixel device
- * @property {number} denomination      The number of faces
- * @property {function} [handleRoll]    A bound handler function for roll events
- * @property {function} [handleStatus]  A bound handler function for status events
- */
-
-/**
- * A mapping of active Pixel dice instances, by name.
- * @type {Map<string, PixelConfiguration>}
- */
-const PIXELS = new Map();
 
 /**
  * A queue of PixelsResolver instances which require resolution
@@ -39,11 +25,16 @@ Hooks.on("init", function() {
     default: false,
     onChange: enabled => {
       module.enabled = enabled;
-      if ( enabled ) {
-        const config = new PixelsConfiguration();
-        config.render(true);
-      }
+      _initialize(enabled);
     }
+  });
+
+  // Remember connected devices
+  game.settings.register("pixels", "devices", {
+    scope: "client",
+    config: false,
+    type: Object,
+    default: {}
   });
 
   // Configuration menu
@@ -53,12 +44,12 @@ Hooks.on("init", function() {
     icon: "fa-solid fa-dice-d20",
     type: PixelsConfiguration,
     restricted: false
-  })
+  });
 
   // Register module properties
   const module = globalThis.pixelsDice = game.modules.get("pixels");
   module.enabled = false;
-  module.PIXELS = PIXELS;
+  module.PIXELS = PixelsManager.fromSetting();
   module.RESOLVERS = RESOLVERS;
   module.api = api;
   module.debounceRoll = foundry.utils.debounce(api.completeManualRoll, 1000);
@@ -68,12 +59,40 @@ Hooks.on("init", function() {
 /*  Client Ready                                */
 /* -------------------------------------------- */
 
-Hooks.on("ready", async function() {
-  const enabled = globalThis.pixelsDice.enabled = game.settings.get("pixels", "enabled");
-  if ( !enabled ) return;
-  const app = new PixelsConfiguration();
-  app.render(true);
+Hooks.on("ready", function() {
+  const enabled = pixelsDice.enabled = game.settings.get("pixels", "enabled");
+  return _initialize(enabled);
 });
+
+/* -------------------------------------------- */
+
+async function _initialize(enabled) {
+
+  // Automatic configuration of dice provider settings
+  const unfulfilledRollsConfig = game.settings.get("unfulfilled-rolls", "diceSettings");
+  if ( enabled ) {
+    game.settings.set("unfulfilled-rolls", "diceSettings", Object.assign(unfulfilledRollsConfig, {
+      bluetoothDieProvider: "pixels",
+      d20: "bluetooth"
+    }));
+  }
+  else if ( unfulfilledRollsConfig.bluetoothDieProvider === "pixels" ) {
+    game.settings.set("unfulfilled-rolls", "diceSettings", Object.assign(unfulfilledRollsConfig, {
+      bluetoothDieProvider: "none",
+      d20: "fvtt"
+    }));
+  }
+
+  // Automatic connection to available dice
+  if ( !enabled ) return;
+  const reconnectSuccess = await pixelsDice.PIXELS.tryReconnect();
+  if ( !reconnectSuccess ) {
+    ui.notifications.warn("Some previously configured Pixels dice were not able to automatically re-connect and " +
+      "must be reconfigured.");
+    const app = new PixelsConfiguration(pixelsDice.PIXELS);
+    app.render(true);
+  }
+}
 
 /* -------------------------------------------- */
 /*  Unfulfilled Rolls Configuration             */

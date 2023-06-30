@@ -3,11 +3,17 @@
         <header>
             <h2>Connected Pixels</h2>
             {{#each pixels as |config|}}
-            <div class="pixel flexrow" data-pixel-id="{{config.name}}">
-                <h3><i class="fa-solid {{config.icon}}"></i> {{config.name}}</h3>
-                <span class="rssi"><i class="fa-solid fa-bluetooth"></i> {{config.pixel.rssi}}</span>
-                <span class="battery"><i class="fa-solid fa-battery-full"></i> {{config.pixel.batteryLevel}}</span>
-                <button type="button" class="flex0" data-action="disconnectPixel" data-tooltip="Disconnect">
+            <div class="pixel flexrow {{config.cssClass}}" data-pixel-id="{{config.name}}">
+                <h3>
+                    <i class="fa-solid {{config.denominationIcon}}"></i>
+                    {{config.name}}
+                    <span class="denomination">({{config.denomination}})</span>
+                </h3>
+                <span class="rssi"><i class="fa-solid {{config.connectionIcon}}"></i> {{config.rssi}}</span>
+                {{#if battery}}
+                <span class="battery"><i class="fa-solid fa-battery-full"></i> {{config.battery}}</span>
+                {{/if}}
+                <button type="button" class="flex0" data-action="disconnectPixel" data-tooltip="{{config.disconnectTooltip}}">
                     <i class="fa-solid fa-times"></i>
                 </button>
             </div>
