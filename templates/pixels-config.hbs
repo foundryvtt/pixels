@@ -1,34 +1,49 @@
-<form autocomplete="off">
-    <section id="connected-devices">
-        <header>
-            <h2>Connected Pixels</h2>
-            {{#each pixels as |config|}}
-            <div class="pixel flexrow {{config.cssClass}}" data-pixel-id="{{config.name}}">
-                <h3>
-                    <i class="fa-solid {{config.denominationIcon}}"></i>
-                    {{config.name}}
-                    <span class="denomination">({{config.denomination}})</span>
-                </h3>
-                <span class="rssi"><i class="fa-solid {{config.connectionIcon}}"></i> {{config.rssi}}</span>
-                {{#if battery}}
-                <span class="battery"><i class="fa-solid fa-battery-full"></i> {{config.battery}}</span>
-                {{/if}}
-                <button type="button" class="flex0" data-action="disconnectPixel" data-tooltip="{{config.disconnectTooltip}}">
-                    <i class="fa-solid fa-times"></i>
-                </button>
-            </div>
-            {{/each}}
-        </header>
+{{#*inline "pixelDevice"}}
+<div class="pixel flexrow {{pixel.cssClass}}" data-pixel-id="{{pixel.name}}">
+    <h3>
+        <i class="fa-solid {{pixel.denominationIcon}}"></i>
+        {{pixel.name}}
+        <span class="denomination">({{pixel.denomination}})</span>
+    </h3>
+    <span class="rssi"><i class="fa-solid {{pixel.connectionIcon}}"></i> {{pixel.rssi}}</span>
+    {{#if battery}}
+        <span class="battery"><i class="fa-solid fa-battery-full"></i> {{pixel.battery}}</span>
+    {{/if}}
+    <button type="button" class="flex0 fa-solid fa-times" data-action="disconnectPixel"
+            data-tooltip="{{pixel.disconnectTooltip}}"></button>
+</div>
+{{/inline}}
 
-        <footer class="flexrow">
-            <button type="button" data-action="requestPixel">
-                <i class="fa-solid fa-plus"></i>
-                Add Pixel Dice
-            </button>
-            <button type="submit">
-                <i class="fa-solid fa-check"></i>
-                Complete
-            </button>
-        </footer>
+<form autocomplete="off">
+    <figure>
+        <img class="noborder" src="modules/pixels/ui/pixels-logo.webp">
+    </figure>
+
+    {{#if hasDevices}}
+    <section id="devices">
+        {{#if connected.length}}
+        <h2>Connected Pixels</h2>
+        {{/if}}
+        {{#each connected as |pixel|}}
+        {{> pixelDevice pixel=pixel}}
+        {{/each}}
+
+        {{#if disconnected.length}}
+        <h2>Disconnected Pixels</h2>
+        {{/if}}
+        {{#each disconnected as |pixel|}}
+        {{> pixelDevice pixel=pixel}}
+        {{/each}}
     </section>
+
+    {{else}}
+    <p>No Pixels devices have been configured yet. Click the "Add Pixel Dice" button to begin.</p>
+    {{/if}}
+
+    <footer class="flexrow">
+        <button type="button" data-action="requestPixel">
+            <i class="fa-solid fa-plus"></i>
+            Add Pixel Dice
+        </button>
+    </footer>
 </form>

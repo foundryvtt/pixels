@@ -25,21 +25,27 @@ export default class PixelsConfiguration extends FormApplication {
 
   /** @override */
   async getData(options) {
-    const pixels = [];
+    const context = {
+      connected: [],
+      disconnected: [],
+      hasDevices: false
+    }
     for ( const config of pixelsDice.PIXELS.values() ) {
-      pixels.push({
+      const arr = config.active ? context.connected : context.disconnected;
+      arr.push({
         cssClass: config.active ? "active" : "inactive",
         name: config.name,
         dieIcon: config.icon,
         disconnectTooltip: config.active ? "Forget" : "Disconnect",
         denomination: `d${config.denomination}`,
-        denominationIcon: "fa-solid fa-dice-d20", // TODO support other icons
+        denominationIcon: "fa-solid fa-dice-d20",
         connectionIcon: config.active ? "fa-bluetooth" : "fa-signal-slash",
         rssi: await config.pixel?.queryRssi(),
         battery: config.pixel?.batteryLevel
       });
     }
-    return {pixels};
+    context.hasDevices = (context.connected.length + context.disconnected.length) > 0;
+    return context;
   }
 
   /* -------------------------------------------- */
