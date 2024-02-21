@@ -7,8 +7,8 @@
   "download": "#{DOWNLOAD}#",
   "url": "https://gamewithpixels.com/",
   "compatibility": {
-    "minimum": 10,
-    "verified": 11
+    "minimum": 12,
+    "verified": 12
   },
   "authors": [
     {
@@ -16,18 +16,6 @@
       "website": "https://foundryvtt.com"
     }
   ],
-  "relationships": {
-    "systems": [],
-    "requires": [
-      {
-        "id": "unfulfilled-rolls",
-        "type": "module",
-        "compatibility": {
-          "minimum": "0.1.0"
-        }
-      }
-    ]
-  },
   "scripts": [
     "node_modules/@systemic-games/pixels-web-connect/dist/umd/index.js"
   ],

@@ -6,9 +6,9 @@
  */
 export function handleRoll(config, result) {
   console.debug(`${config.name} rolled an ${result}`);
-  const resolver = pixelsDice.RESOLVERS[0];
-  if ( resolver ) return resolver.registerResult(config, result);
-  else return manualRoll(config, result);
+  if ( !Roll.defaultImplementation.registerResult("pixels", `d${config.denomination}`, result) ) {
+    return manualRoll(config, result);
+  }
 }
 
 /* -------------------------------------------- */
@@ -49,7 +49,7 @@ let _pendingRoll = {};
 
 export function manualRoll(config, result) {
   _pendingRoll[config.name] = {denomination: config.denomination, value: result};
-  pixelsDice.debounceRoll()
+  pixelsDice.debounceRoll();
 }
 
 /* -------------------------------------------- */

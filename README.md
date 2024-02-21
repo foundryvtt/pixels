@@ -1,6 +1,6 @@
 # Pixels Electronic Dice - Foundry VTT Integration
 
-![alt text](https://raw.githubusercontent.com/foundryvtt/pixels/main/ui/pixels-logo.png)
+![Pixels Electronic Dice Logo](https://raw.githubusercontent.com/foundryvtt/pixels/main/ui/pixels-logo.png)
 
 This module integrates **Pixels - The Electronic Dice** (https://gamewithpixels.com) with **Foundry Virtual Tabletop** (https://foundryvtt.com).
 
@@ -10,7 +10,7 @@ To use this module you must have:
 2. One or more Pixels electronic dice. This module is currently designed and tested using Pixels DevKit d20s.
 
 ## Installing and Activating the Module
-Install the `pixels` module from the Foundry Virtual Tabletop module installation menu. Also install the dependency module `unfulfilled-rolls` which you will be automatically prompted to install. In your game World, activate both the `pixels` and `unfulfilled-rolls` modules.
+Install the "Pixels - Electronic Dice" module from the Foundry Virtual Tabletop module installation menu. In your game World, activate the "Pixels - Electronic Dice" module.
 
 ## Enabling Pixels Dice Integration
 Navigate to the **Settings** sidebar, **Configure Settings**, and the **Pixels** tab. From here check the **Enable Pixels Dice** setting. You will be automatically prompted after this to configure your dice. You can return to this menu at any time to disable Pixels dice or change your Pixels configuration.

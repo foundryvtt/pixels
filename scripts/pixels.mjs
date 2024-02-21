@@ -1,13 +1,6 @@
 import PixelsManager from "./manager.mjs";
 import PixelsConfiguration from "./apps/pixels-config.mjs";
-import PixelsResolver from "./apps/pixels-resolver.mjs";
 import * as api from "./handlers.mjs";
-
-/**
- * A queue of PixelsResolver instances which require resolution
- * @type {PixelsResolver[]}
- */
-const RESOLVERS = [];
 
 /* -------------------------------------------- */
 /*  Client Initialization                       */
@@ -46,11 +39,13 @@ Hooks.on("init", function() {
     restricted: false
   });
 
+  // Core Dice Configuration
+  CONFIG.Dice.fulfillment.methods.pixels = { label: "Pixels - Electronic Dice", interactive: true };
+
   // Register module properties
   const module = globalThis.pixelsDice = game.modules.get("pixels");
   module.enabled = false;
   module.PIXELS = PixelsManager.fromSetting();
-  module.RESOLVERS = RESOLVERS;
   module.api = api;
   module.debounceRoll = foundry.utils.debounce(api.completeManualRoll, 1000);
 });
@@ -67,22 +62,6 @@ Hooks.on("ready", function() {
 /* -------------------------------------------- */
 
 async function _initialize(enabled) {
-
-  // Automatic configuration of dice provider settings
-  const unfulfilledRollsConfig = game.settings.get("unfulfilled-rolls", "diceSettings");
-  if ( enabled ) {
-    game.settings.set("unfulfilled-rolls", "diceSettings", Object.assign(unfulfilledRollsConfig, {
-      bluetoothDieProvider: "pixels",
-      d20: "bluetooth"
-    }));
-  }
-  else if ( unfulfilledRollsConfig.bluetoothDieProvider === "pixels" ) {
-    game.settings.set("unfulfilled-rolls", "diceSettings", Object.assign(unfulfilledRollsConfig, {
-      bluetoothDieProvider: "none",
-      d20: "fvtt"
-    }));
-  }
-
   // Automatic connection to available dice
   if ( !enabled ) return;
   const reconnectSuccess = await pixelsDice.PIXELS.tryReconnect();
@@ -93,16 +72,3 @@ async function _initialize(enabled) {
     app.render(true);
   }
 }
-
-/* -------------------------------------------- */
-/*  Unfulfilled Rolls Configuration             */
-/* -------------------------------------------- */
-
-Hooks.once('unfulfilled-rolls-bluetooth', function(providers) {
-  providers.pixels = {
-    label: "Pixels - Electronic Dice",
-    url: "https://gamewithpixels.com",
-    app: PixelsResolver
-  }
-});
-
