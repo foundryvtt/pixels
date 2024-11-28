@@ -25,5 +25,12 @@
   "styles": [
     "styles/pixels.css"
   ],
-  "license": "LICENSE"
+  "license": "LICENSE",
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ]
 }

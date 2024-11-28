@@ -1,0 +1,37 @@
+{
+  "PIXELS": {
+    "CONFIG": {
+      "ACTIONS": {
+        "Add": "Add Pixel Die",
+        "Disconnect": "Disconnect",
+        "Forget": "Forget"
+      },
+      "Logo": "Pixels Electronic Dice Logo",
+      "NoPixels": "No Pixels devices have been configured yet. Click the 'Add Pixel Die' button to begin.",
+      "Title": "Pixels Electronic Dice Configuration"
+    },
+    "ERRORS": {
+      "STATUS": {
+        "Failure": "Unable to re-connect to Pixel {name}. Manual re-pairing required.",
+        "Lost": "Lost connection to Pixel {name}, attempting to re-establish.",
+        "Success": "Re-established connection to Pixel {name}."
+      },
+      "ConnectFailed": "Failed to connect to die. Please see the console (F12) for full details.",
+      "ReconnectFailed": "Some previously-configured Pixels dice were not able to automatically re-connect, and must be reconfigured."
+    },
+    "SETTINGS": {
+      "CONFIG": {
+        "Label": "Configure Pixels",
+        "Name": "Pixels Configuration"
+      },
+      "ENABLED": {
+        "Hint": "Enable use of Pixels Electronic Dice in the Foundry VTT game client",
+        "Name": "Enable Pixels Dice"
+      },
+      "UNPROMPTED": {
+        "Hint": "If enabled, any die roll will be registered with the VTT. If disabled, a roll will only be registered if the VTT is waiting for one, and ignored otherwise.",
+        "Name": "Allow Unprompted Rolls"
+      }
+    }
+  }
+}

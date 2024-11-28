@@ -11,8 +11,8 @@ Hooks.on("init", function() {
   // Pixels enabled
   game.settings.register("pixels", "enabled", {
     scope: "client",
-    name: "Enable Pixels Dice",
-    hint: "Enable use of Pixels Electronic Dice in the Foundry VTT game client",
+    name: "PIXELS.SETTINGS.ENABLED.Name",
+    hint: "PIXELS.SETTINGS.ENABLED.Hint",
     config: true,
     type: Boolean,
     default: false,
@@ -20,6 +20,16 @@ Hooks.on("init", function() {
       module.enabled = enabled;
       _initialize(enabled);
     }
+  });
+
+  // Unprompted rolls
+  game.settings.register("pixels", "allowUnprompted", {
+    scope: "client",
+    name: "PIXELS.SETTINGS.UNPROMPTED.Name",
+    hint: "PIXELS.SETTINGS.UNPROMPTED.Hint",
+    config: true,
+    type: Boolean,
+    default: true
   });
 
   // Remember connected devices
@@ -32,8 +42,8 @@ Hooks.on("init", function() {
 
   // Configuration menu
   game.settings.registerMenu("pixels", "configuration", {
-    name: "Pixels Configuration",
-    label: "Configure Pixels",
+    name: "PIXELS.SETTINGS.CONFIG.Name",
+    label: "PIXELS.SETTINGS.CONFIG.Label",
     icon: "fa-solid fa-dice-d20",
     type: PixelsConfiguration,
     restricted: false
@@ -47,7 +57,7 @@ Hooks.on("init", function() {
   module.enabled = false;
   module.PIXELS = PixelsManager.fromSetting();
   module.api = api;
-  module.debounceRoll = foundry.utils.debounce(api.completeManualRoll, 1000);
+  module.debounceRoll = foundry.utils.debounce(api.completePendingRoll, 1000);
 });
 
 /* -------------------------------------------- */
@@ -66,8 +76,7 @@ async function _initialize(enabled) {
   if ( !enabled ) return;
   const reconnectSuccess = await pixelsDice.PIXELS.tryReconnect();
   if ( !reconnectSuccess ) {
-    ui.notifications.warn("Some previously configured Pixels dice were not able to automatically re-connect and " +
-      "must be reconfigured.");
+    ui.notifications.warn("PIXELS.ERRORS.ReconnectFailed", { localize: true });
     const app = new PixelsConfiguration(pixelsDice.PIXELS);
     app.render(true);
   }

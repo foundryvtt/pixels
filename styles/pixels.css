@@ -1,62 +1,55 @@
-#pixels-configuration .window-content {
-    background: rgb(13 13 13 / 90%);
+#pixels-configuration {
+  .window-content {
+    background: #0d0d0d;
     color: white;
     padding: 1rem;
-}
+  }
 
-#pixels-configuration form,
-#pixels-configuration #devices {
+  & form, .devices {
     display: flex;
     flex-direction: column;
     gap: 1rem;
-}
+  }
 
-#pixels-configuration figure {
-    margin: 0;
-}
+  & figure { margin: 0 }
 
-#pixels-configuration h2 {
+  & h2 {
+    font-family: var(--font-sans);
     border-top: 1px solid #64646e;
     border-bottom: 1px solid #64646e;
     font-size: var(--font-size-16);
     text-align: center;
     margin: 0;
     padding: 0.5rem
-}
+  }
 
-#pixels-configuration #connected-devices {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
+  .pixel {
+    &.flexrow {
+      gap: 0.5rem;
+      flex-wrap: nowrap;
+      align-items: center;
 
-#pixels-configuration .pixel.flexrow {
-    gap: 0.5rem;
-    flex-wrap: nowrap;
-    align-items: center;
-}
+      & h3 {
+        border: none;
+        margin: 0;
+        font-size: var(--font-size-14);
+        font-weight: bold;
+      }
 
-#pixels-configuration .pixel.flexrow h3 {
-    border: none;
-    margin: 0;
-    font-size: var(--font-size-14);
-    font-weight: bold;
-}
+      & span {
+        flex: none;
+      }
+    }
 
-#pixels-configuration .pixel.flexrow span {
-    flex: none;
-}
+    &.inactive { color: #9999a6; }
+  }
 
-#pixels-configuration .pixel.inactive {
-    color: #9999a6;
-}
+  & footer { margin-top: 1rem; }
 
-#pixels-configuration footer {
-    gap: 1rem;
-}
-
-#pixels-configuration button {
+  & button {
+    padding: 2px 4px;
     background: #151518;
     border: 1px solid #000;
     color: white;
+  }
 }

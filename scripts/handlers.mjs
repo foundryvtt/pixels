@@ -1,76 +1,92 @@
 /**
- * Handle a roll received from a Pixel dice.
- * This function should move somewhere else (eventually).
- * @param {PixelConfiguration} config
- * @param {number} result
+ * @typedef PixelsPendingRoll
+ * @property {string} denomination  The die denomination.
+ * @property {number} result        The roll result.
  */
-export function handleRoll(config, result) {
-  console.debug(`${config.name} rolled an ${result}`);
-  if ( !Roll.defaultImplementation.registerResult("pixels", `d${config.denomination}`, result) ) {
-    return manualRoll(config, result);
-  }
-}
 
-/* -------------------------------------------- */
+/**
+ * Pending rolls, grouped by pixel ID.
+ * @typedef {Record<string, PixelsPendingRoll>} PixelsPendingRolls
+ */
+
+/**
+ * @typedef PixelsRollGroup
+ * @property {string} denomination  The die denomination.
+ * @property {number[]} results     The results for this denomination.
+ */
+
+/**
+ * Pending rolls, grouped by denomination.
+ * @typedef {Record<string, PixelsRollGroup>} PixelsRollGroups
+ */
 
 /**
  * Handle disconnection events from a Pixel device.
  * Attempt automatic re-connection, otherwise prompt user that manual re-connection is required.
- * @param {PixelConfiguration} config
- * @param {string} status
+ * @param {PixelConfiguration} config  The die configuration.
+ * @param {string} status              The status.
  * @returns {Promise<void>}
  */
 export async function handleStatus(config, status) {
   if ( status !== "disconnected") return;   // Only care about disconnected for now
   if ( !config.active ) return; // Already disconnected
   config.active = false;
-  pixelsDice.config.render(false);
+  pixelsDice.config.render();
 
   // Attempt re-connection
-  ui.notifications.warn(`Lost connection to Pixel ${config.name}, attempting to re-establish.`);
+  ui.notifications.warn(game.i18n.format("PIXELS.ERRORS.STATUS.Lost", { name: config.name }));
   try {
     await config.pixel.connect();
     config.active = true;
-    ui.notifications.info(`Re-established connection to Pixel ${config.name}.`);
+    ui.notifications.info(game.i18n.format("PIXELS.ERRORS.STATUS.Success", { name: config.name }));
   }
 
-    // Failed to re-connect
+  // Failed to re-connect
   catch(err) {
     delete config.pixel;
     pixelsDice.PIXELS.set(config.name, config);
-    ui.notifications.warn(`Unable to re-connect to Pixel ${config.name}. Manual re-pairing required.`);
+    ui.notifications.warn(game.i18n.format("PIXELS.ERRORS.STATUS.Failure", { name: config.name }));
   }
-  pixelsDice.config.render(false);
+  pixelsDice.config.render();
 }
 
 /* -------------------------------------------- */
 
+/**
+ * The currently pending rolls.
+ * @type {PixelsPendingRolls}
+ * @internal
+ */
 let _pendingRoll = {};
 
-export function manualRoll(config, result) {
-  _pendingRoll[config.name] = {denomination: config.denomination, value: result};
+/**
+ * Wait for additional physical dice rolls before completing an atomic roll action.
+ * @param {PixelConfiguration} config
+ * @param {number} result
+ */
+export function pendingRoll({ denomination, name, pixelId }, result) {
+  // Treat a report of 0 on a d10 as a result of 10.
+  if ( (denomination === "d10") && (result < 1) ) result = 10;
+  console.debug(`Pixels pending roll - ${name} / ${pixelId} - ${result}`);
+  _pendingRoll[pixelId] = { denomination, result };
   pixelsDice.debounceRoll();
 }
 
 /* -------------------------------------------- */
 
-export async function completeManualRoll() {
-
-  // Group rolled dice by denomination
-  const groups = Object.values(_pendingRoll).reduce((obj, r) => {
-    obj[r.denomination] ||= {denomination: r.denomination, results: []};
-    obj[r.denomination].results.push(r.value);
-    return obj;
-  }, {});
-
-  // Clear the previous pending roll
-  _pendingRoll = {};
-
+/**
+ * Post an unprompted roll to chat.
+ * @param {PixelsRollGroups} groups  The pending rolls, grouped by denomination.
+ * @returns {Promise<ChatMessage>}
+ */
+function completeManualRoll(groups) {
   // Sort denominations from largest to smallest
-  const sorted = Object.values(groups).sort((a, b) => b.denomination - a.denomination);
+  const sorted = Object.values(groups).filter(({ results }) => results.length).sort((a, b) => {
+    return Number(b.denomination.slice(1)) - Number(a.denomination.slice(1));
+  });
 
   // Create a Roll instance
-  const formula = sorted.map(group => `${group.results.length}d${group.denomination}`).join(" + ");
+  const formula = sorted.map(group => `${group.results.length}${group.denomination}`).join(" + ");
   const rollData = {
     class: "Roll",
     evaluated: true,
@@ -80,7 +96,7 @@ export async function completeManualRoll() {
         class: "Die",
         evaluated: true,
         number: group.results.length,
-        faces: group.denomination,
+        faces: Number(group.denomination.slice(1)),
         modifiers: [],
         results: group.results.map(r => ({active: true, result: r}))
       }
@@ -90,5 +106,96 @@ export async function completeManualRoll() {
   roll._total = roll._evaluateTotal();
 
   // Create a chat message
-  await roll.toMessage();
+  return roll.toMessage();
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Submit the pending rolls.
+ */
+export function completePendingRoll() {
+  // Group rolled dice by denomination.
+  const groups = Object.values(_pendingRoll).reduce((obj, { denomination, result }) => {
+    obj[denomination] ??= { denomination, results: [] };
+    obj[denomination].results.push(result);
+    return obj;
+  }, {});
+
+  // Clear the previous pending rolls.
+  _pendingRoll = {};
+
+  // Do one pass over available RollResolvers to fulfill any requested d10s before they are converted to d100s.
+  handleRolls(groups);
+
+  // Detect d100 rolls.
+  detectD100Rolls(groups);
+
+  // Do a second pass to fulfill any requested d100s.
+  handleRolls(groups);
+
+  // If there are unhandled rolls remaining, dispatch an unprompted roll.
+  const allowUnprompted = game.settings.get("pixels", "allowUnprompted");
+  if ( allowUnprompted && !foundry.utils.isEmpty(groups) ) return completeManualRoll(groups);
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Detect any d100 rolls in a set of pending rolls.
+ * If d00s are used, they will be prioritised, otherwise pairs of d10s will be taken.
+ * // TODO: Core RollResolver needs to be able to support rolling d10s one-at-a-time in order to fulfill pending d100
+ * // rolls.
+ * @param {PixelsRollGroups} groups  The pending rolls, grouped by denomination.
+ */
+function detectD100Rolls(groups) {
+  if ( !("d10" in groups) ) return;
+  const working = foundry.utils.deepClone(groups);
+
+  for ( let i = 0; i < working.d10.results.length; i++ ) {
+    let result;
+    let d10 = working.d10.results[i];
+    let d00 = working.d00?.results[i];
+    if ( d00 === undefined ) {
+      d00 = working.d10.results[++i];
+      if ( d00 === undefined ) break;
+      else groups.d10.results = groups.d10.results.slice(2);
+    } else {
+      groups.d10.results.shift();
+      groups.d00.results.shift();
+    }
+
+    // When rolling a d10 as part of a percentile roll, treat 10s as 0.
+    d10 %= 10;
+
+    // Treat a roll of 00 and 0 as 100.
+    if ( (d10 < 1) && (d00 < 1) ) result = 100;
+    else result = d00 + d10;
+
+    // Record the result.
+    groups.d100 ??= { denomination: "d100", results: [] };
+    groups.d100.results.push(result);
+  }
+
+  // Remove any unpaired d00s.
+  delete groups.d00;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Dispatch pending rolls to any active RollResolvers.
+ * @param {PixelsRollGroups} groups  The pending rolls, grouped by denomination.
+ */
+function handleRolls(groups) {
+  for ( const [denomination, { results }] of Object.entries(groups) ) {
+    let slice = 0;
+    for ( const result of results ) {
+      const handled = Roll.defaultImplementation.registerResult("pixels", denomination, result);
+      if ( handled ) slice++;
+      else break;
+    }
+    groups[denomination].results = results.slice(slice);
+    if ( !groups[denomination].results.length ) delete groups[denomination];
+  }
 }
