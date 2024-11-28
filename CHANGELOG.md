@@ -1,3 +1,6 @@
+## 1.0.1
+Re-release to fix issue generating module archive.
+
 ## 1.0.0
 
 ### Fixes
