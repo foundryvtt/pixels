@@ -11,7 +11,7 @@
 name: System Release Build
 
 env:
-  node_version: 18
+  node_version: 20
   project_url: "https://github.com/${{github.repository}}"
   latest_manifest_url: "https://github.com/${{github.repository}}/releases/latest/download/module.json"
   release_module_url: "https://github.com/${{github.repository}}/releases/download/${{github.event.release.tag_name}}/module.zip"
@@ -25,15 +25,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Install node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.node_version }}
 
       - name: Cache Node.js modules
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: .npm
           key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}

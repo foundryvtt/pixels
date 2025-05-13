@@ -1,3 +1,9 @@
+## 1.0.2
+
+### Improvements
+ - Updated for V13 compatibility.
+ - Additional debug logging.
+
 ## 1.0.1
 Re-release to fix issue generating module archive.
 

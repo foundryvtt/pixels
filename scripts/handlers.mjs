@@ -67,7 +67,9 @@ let _pendingRoll = {};
 export function pendingRoll({ denomination, name, pixelId }, result) {
   // Treat a report of 0 on a d10 as a result of 10.
   if ( (denomination === "d10") && (result < 1) ) result = 10;
-  console.debug(`Pixels pending roll - ${name} / ${pixelId} - ${result}`);
+  if ( CONFIG.debug.pixels ) {
+    console.debug(`Pixels | [${name}] [${pixelId}] Pending roll (${denomination}) - ${result}`);
+  }
   _pendingRoll[pixelId] = { denomination, result };
   pixelsDice.debounceRoll();
 }
@@ -149,6 +151,7 @@ export function completePendingRoll() {
  * @param {PixelsRollGroups} groups  The pending rolls, grouped by denomination.
  */
 function detectD100Rolls(groups) {
+  if ( CONFIG.debug.pixels ) console.debug("Pixels | Detecting d100 rolls ", foundry.utils.deepClone(groups));
   if ( !("d10" in groups) ) return;
   const working = foundry.utils.deepClone(groups);
 
@@ -156,11 +159,19 @@ function detectD100Rolls(groups) {
     let result;
     let d10 = working.d10.results[i];
     let d00 = working.d00?.results[i];
+
+    if ( CONFIG.debug.pixels ) console.debug(`Pixels | [${i}] Pairing d00 roll with d10 - ${d10}`);
+
     if ( d00 === undefined ) {
       d00 = working.d10.results[++i];
+      if ( CONFIG.debug.pixels ) {
+        if ( d00 === undefined ) console.debug(`Pixels | [${i}] Failed to find another d10 result to pair with`);
+        else console.debug(`Pixels | [${i}] Found d10 result to pair with - ${d00}`);
+      }
       if ( d00 === undefined ) break;
       else groups.d10.results = groups.d10.results.slice(2);
     } else {
+      if ( CONFIG.debug.pixels ) console.debug(`Pixels | [${i}] Found d00 result to pair with - ${d00}`);
       groups.d10.results.shift();
       groups.d00.results.shift();
     }
@@ -188,10 +199,15 @@ function detectD100Rolls(groups) {
  * @param {PixelsRollGroups} groups  The pending rolls, grouped by denomination.
  */
 function handleRolls(groups) {
+  if ( CONFIG.debug.pixels ) console.debug("Pixels | Handle pending rolls ", foundry.utils.deepClone(groups));
   for ( const [denomination, { results }] of Object.entries(groups) ) {
     let slice = 0;
     for ( const result of results ) {
       const handled = Roll.defaultImplementation.registerResult("pixels", denomination, result);
+      if ( CONFIG.debug.pixels ) {
+        console.debug(`Pixels | Registering result (${denomination}) - ${result}`);
+        console.debug(`Pixels | Handled: ${!!handled}`);
+      }
       if ( handled ) slice++;
       else break;
     }

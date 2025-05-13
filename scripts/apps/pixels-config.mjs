@@ -12,7 +12,7 @@ export default class PixelsConfiguration extends HandlebarsApplicationMixin(Appl
   /** @override */
   static DEFAULT_OPTIONS = {
     id: "pixels-configuration",
-    classes: ["pixels"],
+    classes: ["pixels", "themed", "theme-dark"],
     tag: "form",
     window: {
       title: "PIXELS.CONFIG.Title"
