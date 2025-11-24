@@ -31,6 +31,10 @@
       "UNPROMPTED": {
         "Hint": "If enabled, any die roll will be registered with the VTT. If disabled, a roll will only be registered if the VTT is waiting for one, and ignored otherwise.",
         "Name": "Allow Unprompted Rolls"
+      },
+      "HEARTBEAT": {
+        "Hint": "If enabled, the VTT will periodically attempt to reconnect the Pixels dice every X minutes. You may also need to physically wake the dice up by picking them up periodically.",
+        "Name": "Enable Heartbeat"
       }
     }
   }

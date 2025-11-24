@@ -6,7 +6,9 @@ import * as api from "./handlers.mjs";
 /*  Client Initialization                       */
 /* -------------------------------------------- */
 
-Hooks.on("init", function() {
+let reconnectInterval;
+
+Hooks.on("init", function () {
 
   // Pixels enabled
   game.settings.register("pixels", "enabled", {
@@ -38,6 +40,23 @@ Hooks.on("init", function() {
     config: false,
     type: Object,
     default: {}
+  });
+
+  // Heartbeat interval
+  game.settings.register("pixels", "heartBeatInterval", {
+    scope: "client",
+    name: "PIXELS.SETTINGS.HEARTBEAT.Name",
+    hint: "PIXELS.SETTINGS.HEARTBEAT.Hint",
+    config: true,
+    type: new foundry.data.fields.NumberField({
+      required: true, nullable: false, integer: true, min: 0, max: 60, step: 1, initial: 0
+    }),
+    onChange: heartBeatInterval => {
+      clearInterval(reconnectInterval);
+      if ( heartBeatInterval ) {
+        reconnectInterval = setInterval(() => pixelsDice.PIXELS.tryReconnect(), heartBeatInterval * 60_000);
+      }
+    }
   });
 
   // Configuration menu
@@ -74,10 +93,19 @@ Hooks.on("ready", function() {
 async function _initialize(enabled) {
   // Automatic connection to available dice
   if ( !enabled ) return;
+
   const reconnectSuccess = await pixelsDice.PIXELS.tryReconnect();
+
   if ( !reconnectSuccess ) {
     ui.notifications.warn("PIXELS.ERRORS.ReconnectFailed", { localize: true });
     const app = new PixelsConfiguration(pixelsDice.PIXELS);
     app.render(true);
+  }
+
+  // Schedule the reconnectPixels function to run every x minutes based on client settings
+  const heartBeatInterval = game.settings.get("pixels", "heartBeatInterval");
+  if ( heartBeatInterval ) {
+    clearInterval(reconnectInterval);
+    reconnectInterval = setInterval(() => pixelsDice.PIXELS.tryReconnect(), heartBeatInterval * 60_000);
   }
 }

@@ -1,3 +1,8 @@
+## 1.0.3
+
+### Improvements
+ - (Stephen Cooper) (JamzTheMan) Added heartbeat reconnect setting.
+
 ## 1.0.2
 
 ### Improvements
