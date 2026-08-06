@@ -1,7 +1,9 @@
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 /**
- * An application used for initial configuration of Pixels dice.
+ * An application used for configuration of Pixels dice.
+ * Displays a unified list of known dice with connection status indicators,
+ * per-die reconnect buttons, and forget functionality.
  */
 export default class PixelsConfiguration extends HandlebarsApplicationMixin(ApplicationV2) {
   constructor(options) {
@@ -22,7 +24,8 @@ export default class PixelsConfiguration extends HandlebarsApplicationMixin(Appl
       height: "auto"
     },
     actions: {
-      disconnectPixel: PixelsConfiguration.#onDisconnectPixel,
+      forgetPixel: PixelsConfiguration.#onForgetPixel,
+      reconnectPixel: PixelsConfiguration.#onReconnectPixel,
       requestPixel: PixelsConfiguration.#onRequestPixel
     }
   };
@@ -38,50 +41,35 @@ export default class PixelsConfiguration extends HandlebarsApplicationMixin(Appl
 
   /** @override */
   async _prepareContext(options) {
-    const context = {
-      connected: [],
-      disconnected: [],
-      hasDevices: false
-    }
+    const devices = [];
     for ( const config of pixelsDice.PIXELS.values() ) {
-      let rssi;
-      try {
-        rssi = await config.pixel?.queryRssi();
-      } catch(err) {
-        ui.notifications.warn("PIXELS.ERRORS.ReconnectFailed", { localize: true });
-        console.error(err);
-        await pixelsDice.PIXELS.disconnect(config.pixelId);
-      }
-
-      const arr = config.active ? context.connected : context.disconnected;
       const icon = config.denomination === "d00" ? "fa-percent" : `fa-dice-${config.denomination}`;
-
-      arr.push({
-        rssi,
+      devices.push({
         cssClass: config.active ? "active" : "inactive",
+        statusClass: config.active ? "connected" : "disconnected",
+        statusLabel: config.active ? "Connected" : "Disconnected",
         name: config.name,
         pixelId: config.pixelId,
-        dieIcon: config.icon,
-        disconnectTooltip: `PIXELS.CONFIG.ACTIONS.${config.active ? "Disconnect" : "Forget"}`,
         denomination: config.denomination,
         denominationIcon: `fa-solid ${icon}`,
-        connectionIcon: config.active ? "fa-bluetooth" : "fa-signal-slash",
+        active: config.active,
         battery: config.pixel?.batteryLevel
       });
     }
-    context.hasDevices = (context.connected.length + context.disconnected.length) > 0;
-    return context;
+    return {
+      devices,
+      hasDevices: devices.length > 0
+    };
   }
 
   /* -------------------------------------------- */
 
   /**
-   * Forget a Pixels die, removing it from the connected set.
-   * @param {PointerEvent} event  The originating click event.
-   * @param {HTMLElement} target  The action target.
-   * @returns {Promise<void>}
+   * Forget a Pixels die, removing it from the known set entirely.
+   * @param {PointerEvent} event    The originating click event.
+   * @param {HTMLElement} target    The action target.
    */
-  static async #onDisconnectPixel(event, target) {
+  static async #onForgetPixel(event, target) {
     const { pixelId } = target.closest(".pixel").dataset;
     await pixelsDice.PIXELS.disconnect(pixelId);
     this.render();
@@ -90,10 +78,34 @@ export default class PixelsConfiguration extends HandlebarsApplicationMixin(Appl
   /* -------------------------------------------- */
 
   /**
-   * Manage the workflow to connect a new Pixels die.
-   * @param {PointerEvent} event  The originating click event.
-   * @param {HTMLElement} target  The action target.
-   * @returns {Promise<void>}
+   * Reconnect to a specific known die using a filtered Bluetooth dialog.
+   * The browser's device chooser will only show the die matching this name.
+   * @param {PointerEvent} event    The originating click event.
+   * @param {HTMLElement} target    The action target.
+   */
+  static async #onReconnectPixel(event, target) {
+    const pixelElement = target.closest(".pixel");
+    const { pixelId } = pixelElement.dataset;
+    target.disabled = true;
+    const icon = target.querySelector("i");
+    icon.className = "fa-solid fa-spinner fa-spin";
+    try {
+      await pixelsDice.PIXELS.reconnectById(pixelId);
+    } catch(err) {
+      if ( err.name !== "NotFoundError" ) {
+        ui.notifications.error("PIXELS.ERRORS.ReconnectFailed", { localize: true });
+        console.error(err);
+      }
+    }
+    this.render();
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * Request connection to a brand new Pixel die.
+   * @param {PointerEvent} event    The originating click event.
+   * @param {HTMLElement} target    The action target.
    */
   static async #onRequestPixel(event, target) {
     target.disabled = true;
@@ -102,8 +114,10 @@ export default class PixelsConfiguration extends HandlebarsApplicationMixin(Appl
     try {
       await pixelsDice.PIXELS.request();
     } catch(err) {
-      ui.notifications.error("PIXELS.ERRORS.ConnectFailed", { localize: true });
-      console.error(err);
+      if ( err.name !== "NotFoundError" ) {
+        ui.notifications.error("PIXELS.ERRORS.ConnectFailed", { localize: true });
+        console.error(err);
+      }
     }
     this.render();
   }

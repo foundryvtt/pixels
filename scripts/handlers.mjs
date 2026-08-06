@@ -34,7 +34,7 @@ export async function handleStatus(config, status) {
   if ( status !== "disconnected") return;   // Only care about disconnected for now
   if ( !config.active ) return; // Already disconnected
   config.active = false;
-  pixelsDice.config.render();
+  pixelsDice.config?.render();
 
   // Attempt re-connection
   ui.notifications.warn(game.i18n.format("PIXELS.ERRORS.STATUS.Lost", { name: config.name }));
@@ -50,7 +50,7 @@ export async function handleStatus(config, status) {
     pixelsDice.PIXELS.set(config.name, config);
     ui.notifications.warn(game.i18n.format("PIXELS.ERRORS.STATUS.Failure", { name: config.name }));
   }
-  pixelsDice.config.render();
+  pixelsDice.config?.render();
 }
 
 /* -------------------------------------------- */

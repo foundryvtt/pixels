@@ -89,6 +89,38 @@ export default class PixelsManager extends Map {
   /* -------------------------------------------- */
 
   /**
+   * Reconnect to a specific known die by its pixel ID.
+   * First attempts a silent reconnect via the stored system ID (works when the
+   * browser has persistent Bluetooth permissions). If that fails, falls back to
+   * the device chooser so the user can manually select the die.
+   * @param {string} id   The pixel ID of the die to reconnect.
+   * @returns {Promise<void>}
+   */
+  async reconnectById(id) {
+    const config = this.get(id);
+    if ( !config ) throw new Error(`No known die with pixel ID: ${id}`);
+
+    // Try silent reconnection first (requires persistent BLE permissions)
+    // noinspection JSUnresolvedReference
+    let pixel = await pixelsWebConnect.getPixel(config.systemId);
+    if ( pixel ) {
+      try {
+        await this.connect(pixel);
+        return;
+      } catch(err) {
+        console.warn(`Pixels | Direct reconnect failed for ${config.name}, falling back to device chooser`);
+      }
+    }
+
+    // Fall back to the device chooser
+    // noinspection JSUnresolvedReference
+    pixel = await pixelsWebConnect.requestPixel();
+    await this.connect(pixel);
+  }
+
+  /* -------------------------------------------- */
+
+  /**
    * Connect a new Pixel.
    * @param {Pixel} pixel
    */
@@ -117,6 +149,9 @@ export default class PixelsManager extends Map {
       active: true
     });
     this.set(pixel.pixelId, config);
+
+    // Update the config UI if open
+    pixelsDice.config?.render();
 
     // Confirmation blink
     await pixel.blink(Color.from("#cc6600"));

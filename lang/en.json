@@ -4,8 +4,10 @@
       "ACTIONS": {
         "Add": "Add Pixel Die",
         "Disconnect": "Disconnect",
-        "Forget": "Forget"
+        "Forget": "Forget",
+        "Reconnect": "Reconnect"
       },
+      "KnownDice": "Known Dice",
       "Logo": "Pixels Electronic Dice Logo",
       "NoPixels": "No Pixels devices have been configured yet. Click the 'Add Pixel Die' button to begin.",
       "Title": "Pixels Electronic Dice Configuration"
