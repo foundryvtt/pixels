@@ -57,6 +57,10 @@ export default class PixelsConfiguration extends HandlebarsApplicationMixin(Appl
         battery: config.pixel?.batteryLevel
       });
     }
+    devices.sort((a, b) => {
+      if ( a.active !== b.active ) return a.active ? -1 : 1;
+      return a.name.localeCompare(b.name);
+    });
     return {
       devices,
       hasDevices: devices.length > 0
