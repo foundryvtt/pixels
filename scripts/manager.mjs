@@ -182,6 +182,41 @@ export default class PixelsManager extends Map {
   /* -------------------------------------------- */
 
   /**
+   * Forget a Pixel entirely — disconnect, revoke Bluetooth permission, and
+   * remove from the known devices list.
+   * @param {string} id
+   * @returns {Promise<void>}
+   */
+  async forget(id) {
+    const config = this.get(id);
+    if ( !config ) return;
+
+    // Disconnect if active
+    const pixel = config.pixel;
+    if ( config.active && pixel ) {
+      pixel.removeEventListener("roll", config.handleRoll);
+      pixel.removeEventListener("status", config.handleStatus);
+      await pixel.disconnect();
+    }
+
+    // Revoke Bluetooth permission (un-pair) if the API is available
+    if ( navigator.bluetooth?.getDevices ) {
+      try {
+        const devices = await navigator.bluetooth.getDevices();
+        const device = devices.find(d => d.id === config.systemId);
+        if ( device?.forget ) await device.forget();
+      } catch(err) {
+        console.warn(`Pixels | Could not revoke Bluetooth permission for ${config.name}:`, err.message);
+      }
+    }
+
+    // Remove from stored devices
+    this.delete(id);
+  }
+
+  /* -------------------------------------------- */
+
+  /**
    * Convert the Map to an object for storage as a client setting.
    * @returns {object}
    */

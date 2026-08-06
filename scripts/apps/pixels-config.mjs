@@ -48,6 +48,7 @@ export default class PixelsConfiguration extends HandlebarsApplicationMixin(Appl
         cssClass: config.active ? "active" : "inactive",
         statusClass: config.active ? "connected" : "disconnected",
         statusLabel: config.active ? "Connected" : "Disconnected",
+        disconnectTooltip: config.active ? "Disconnect" : "Forget",
         name: config.name,
         pixelId: config.pixelId,
         denomination: config.denomination,
@@ -71,7 +72,15 @@ export default class PixelsConfiguration extends HandlebarsApplicationMixin(Appl
    */
   static async #onForgetPixel(event, target) {
     const { pixelId } = target.closest(".pixel").dataset;
-    await pixelsDice.PIXELS.disconnect(pixelId);
+    const config = pixelsDice.PIXELS.get(pixelId);
+
+    if ( config?.active ) {
+      // Connected: just disconnect but keep in the known list
+      await pixelsDice.PIXELS.disconnect(pixelId);
+    } else {
+      // Disconnected: forget entirely (un-pair and remove)
+      await pixelsDice.PIXELS.forget(pixelId);
+    }
     this.render();
   }
 
