@@ -63,7 +63,9 @@ export default class PixelsConfiguration extends HandlebarsApplicationMixin(Appl
     });
     return {
       devices,
-      hasDevices: devices.length > 0
+      hasDevices: devices.length > 0,
+      connectedCount: devices.filter(d => d.active).length,
+      totalCount: devices.length
     };
   }
 

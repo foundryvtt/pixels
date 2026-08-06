@@ -6,7 +6,7 @@
 
     {{#if hasDevices}}
     <section class="devices">
-        <h2>{{ localize "PIXELS.CONFIG.KnownDice" }}</h2>
+        <h2>{{ localize "PIXELS.CONFIG.KnownDice" }} <span class="dice-count">{{ connectedCount }}/{{ totalCount }}</span></h2>
         {{#each devices}}
         <div class="pixel flexrow {{ cssClass }}" data-pixel-id="{{ pixelId }}">
             <span class="pixel-status {{ statusClass }}" title="{{ statusLabel }}"></span>
