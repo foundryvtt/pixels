@@ -54,7 +54,7 @@ export default class PixelsConfiguration extends HandlebarsApplicationMixin(Appl
         denomination: config.denomination,
         denominationIcon: `fa-solid ${icon}`,
         active: config.active,
-        battery: config.pixel?.batteryLevel
+        battery: config.active ? config.pixel?.batteryLevel : null
       });
     }
     const denomOrder = { d4: 0, d6: 1, d8: 2, d10: 3, d00: 3, d12: 4, d20: 5 };
