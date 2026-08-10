@@ -24,6 +24,16 @@ Hooks.on("init", function () {
     }
   });
 
+  // Dice substitution
+  game.settings.register("pixels", "allowDiceSubstitution", {
+    scope: "client",
+    name: "PIXELS.SETTINGS.SUBSTITUTION.Name",
+    hint: "PIXELS.SETTINGS.SUBSTITUTION.Hint",
+    config: true,
+    type: Boolean,
+    default: false
+  });
+
   // Unprompted rolls
   game.settings.register("pixels", "allowUnprompted", {
     scope: "client",

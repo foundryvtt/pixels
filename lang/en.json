@@ -28,6 +28,10 @@
         "Hint": "Enable use of Pixels Electronic Dice in the Foundry VTT game client",
         "Name": "Enable Pixels Dice"
       },
+      "SUBSTITUTION": {
+        "Hint": "If enabled, a d8, d12, or d20 can fulfill a pending d4, d6, or d10 roll (respectively) when no matching slot for the larger die exists. The result is converted to the smaller die's range.",
+        "Name": "Allow Dice Substitution"
+      },
       "UNPROMPTED": {
         "Hint": "If enabled, any die roll will be registered with the VTT. If disabled, a roll will only be registered if the VTT is waiting for one, and ignored otherwise.",
         "Name": "Allow Unprompted Rolls"
